@@ -1,4 +1,4 @@
-# ALX Backend Storage
+<h1 align=center>ALX Backend Storage</h1>
 
 ![image](https://github.com/mrnazu/alx-backend-storage/assets/108541991/4bc02244-89ad-40dc-a509-465c160cc2f9)
 
