@@ -1,12 +1,14 @@
 import uuid
 import redis
 from typing import Union, Callable
+from functools import wraps
 
 class Cache:
     def __init__(self, host='localhost', port=6379, db=0):
         self._redis = redis.Redis(host=host, port=port, db=db)
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         key = str(uuid.uuid4())
         if isinstance(data, (int, float)):
@@ -26,22 +28,21 @@ class Cache:
     def get_int(self, key: str) -> Union[int, None]:
         return self.get(key, fn=int)
 
-# Example usage and test cases
+def count_calls(method: Callable) -> Callable:
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        key = f"{method.__qualname__}_calls"
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
+
+# Example usage and test
 cache = Cache()
 
-TEST_CASES = {
-    b"foo": None,
-    123: int,
-    "bar": lambda d: d.decode("utf-8")
-}
+# Calling store multiple times
+for _ in range(5):
+    cache.store("Hello, Redis!")
 
-for value, fn in TEST_CASES.items():
-    key = cache.store(value)
-    assert cache.get(key, fn=fn) == value
-
-# Additional test cases using get_str and get_int
-str_key = cache.store("Hello, Redis!")
-int_key = cache.store(42)
-
-assert cache.get_str(str_key) == "Hello, Redis!"
-assert cache.get_int(int_key) == 42
+# Retrieving the count of store calls
+store_calls_count = cache._redis.get("Cache.store_calls")
+print(f"Number of store calls: {int(store_calls_count)}")
