@@ -51,8 +51,8 @@ def get_page(url: str) -> str:
 
 # Example usage
 if __name__ == "__main__":
-    # Example of calling the get_page function with caching
-    url_to_fetch = "https://www.example.com"
+    # Example of calling the get_page function with caching and slow response simulation
+    url_to_fetch = "http://slowwly.robertomurray.co.uk"
     result = get_page(url_to_fetch)
     
     # Print the result
