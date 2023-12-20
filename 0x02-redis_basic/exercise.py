@@ -16,6 +16,26 @@ class Cache:
         self._redis.set(key, data)
         return key
 
+    def replay(self, method: str):
+        input_key = f"{method}:inputs"
+        output_key = f"{method}:outputs"
+
+        # Retrieve input and output history from Redis
+        input_history = self._redis.lrange(input_key, 0, -1)
+        output_history = self._redis.lrange(output_key, 0, -1)
+
+        print(f"Replay for method: {method}\n")
+
+        # Display input history
+        print("Input History:")
+        for i, entry in enumerate(input_history, 1):
+            print(f"{i}. {entry.decode('utf-8')}")
+
+        print("\nOutput History:")
+        # Display output history
+        for i, entry in enumerate(output_history, 1):
+            print(f"{i}. {entry.decode('utf-8')}")
+
     def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
         data = self._redis.get(key)
         if data is not None:
@@ -53,17 +73,5 @@ cache = Cache()
 for _ in range(3):
     cache.store("Hello, Redis!")
 
-# Retrieving the input and output history
-input_history_key = "Cache.store:inputs"
-output_history_key = "Cache.store:outputs"
-
-input_history = cache._redis.lrange(input_history_key, 0, -1)
-output_history = cache._redis.lrange(output_history_key, 0, -1)
-
-print("Input History:")
-for entry in input_history:
-    print(entry.decode('utf-8'))
-
-print("\nOutput History:")
-for entry in output_history:
-    print(entry.decode('utf-8'))
+# Replay the history of calls for the store method
+cache.replay("Cache.store")
